@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+/*
 class Square extends React.Component {
     render() {
       return (
@@ -14,21 +15,36 @@ class Square extends React.Component {
         </button>
       );
     }
-  }
+}*/
+//rewriting the square component as a Function Component
+function Square(props) {
+    return (
+        <button className="square" onClick={props.onClick}>
+            {props.value}
+        </button>
+    );
+}
   
-  class Board extends React.Component {
+class Board extends React.Component {
     //this is to initialize the state: memory of an instance
     constructor(props) {
         super(props);
         this.state = {
             squares: Array(9).fill(null),
+            XisNext: true,
         };
     }
 
     handleClick(i) {
         const squares = this.state.squares.slice();
-        squares[i] = 'X';
-        this.setState({squares: squares});
+        if (calculateWinner(squares) || squares[i]) {
+            return;    //This is to ignore if game finished or clicking on a non empty square
+        }
+        squares[i] = this.state.XisNext ? 'X' : 'O';
+        this.setState({
+            squares: squares,
+            XisNext: !this.state.XisNext,
+        });
     }
 
     renderSquare(i) {
@@ -39,66 +55,91 @@ class Square extends React.Component {
             />
         );
     }
-  
+
     render() {
-      const status = 'Next player: X';
-  
-      return (
+        const winner = calculateWinner(this.state.squares);
+        let status;
+        if (winner) {
+            status = 'Winner: ' + winner;
+        } else {
+            status = 'Next player: ' + (this.state.XisNext ? 'X' : 'O');
+        }
+        
+        return (
         <div>
-          <div className="status">{status}</div>
-          <div className="board-row">
+            <div className="status">{status}</div>
+            <div className="board-row">
             {this.renderSquare(0)}
             {this.renderSquare(1)}
             {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
+            </div>
+            <div className="board-row">
             {this.renderSquare(3)}
             {this.renderSquare(4)}
             {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
+            </div>
+            <div className="board-row">
             {this.renderSquare(6)}
             {this.renderSquare(7)}
             {this.renderSquare(8)}
-          </div>
+            </div>
         </div>
-      );
+        );
     }
-  }
-  
-  class Game extends React.Component {
+    }
+
+    class Game extends React.Component {
     render() {
-      return (
+        return (
         <div className="game">
-          <div className="game-board">
+            <div className="game-board">
             <Board />
-          </div>
-          <div className="game-info">
+            </div>
+            <div className="game-info">
             <div>{/* status */}</div>
             <ol>{/* TODO */}</ol>
-          </div>
+            </div>
         </div>
-      );
+        );
     }
-  }
-  
-  // ========================================
-  
-  ReactDOM.render(
+}
+
+// ========================================
+
+ReactDOM.render(
     <Game />,
     document.getElementById('root')
-  );
+);
 
+// ======================================== Determine winner
+function calculateWinner(squares) {
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
+      }
+    }
+    return null;
+  }
 
-  // ======== For test
-  function tick() {
+// ======== For test
+function tick() {
     const element = (
-      <div>
+        <div>
         <h2>It is {new Date().toLocaleTimeString()}</h2>
-      </div>
+        </div>
     );
     ReactDOM.render(element, document.getElementById('watch'));
-  }
-  
-  setInterval(tick, 1000);
-  
+}
+
+setInterval(tick, 1000);
